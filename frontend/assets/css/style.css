@@ -1,0 +1,347 @@
+/* style.css */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+:root {
+    --bg-app: #f8fafc;
+    --bg-card: #ffffff;
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-light: #eff6ff;
+    --dark-slate: #0f172a;
+    --text-main: #334155;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --danger: #ef4444;
+    --danger-hover: #dc2626;
+    --success: #10b981;
+}
+
+body {
+    background-color: var(--bg-app);
+    color: var(--text-main);
+    padding: 20px;
+}
+
+/* Table Design */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    padding: 16px;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+th {
+    background-color: #f8fafc;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 13px;
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+td {
+    padding: 14px 16px;
+    font-size: 14px;
+    color: var(--text-main);
+    border-bottom: 1px solid var(--border);
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr:hover td {
+    background-color: #f8fafc;
+}
+
+/* Badges */
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.badge-success { background-color: #d1fae5; color: #059669; }
+.badge-warning { background-color: #fef3c7; color: #d97706; }
+.badge-danger { background-color: #fee2e2; color: #ef4444; }
+
+/* Notification Box */
+.notif-box {
+    background: var(--bg-card);
+    border: 2px dashed var(--border);
+    padding: 40px 20px;
+    border-radius: 12px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+/* --- Tambahan Styling & Responsif Dashboard Modern --- */
+.dashboard-body {
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background-color: var(--bg-app);
+}
+
+.navbar {
+    background: var(--dark-slate);
+    color: white;
+    padding: 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 70px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.navbar-brand h1 {
+    font-size: 18px;
+    font-weight: 700;
+    background: linear-gradient(to right, #3b82f6, #60a5fa);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.brand-icon {
+    font-size: 20px;
+}
+
+.user-menu {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.badge-user {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.btn-out {
+    background: var(--danger);
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-out:hover {
+    background: var(--danger-hover);
+}
+
+.tabs-container {
+    background: #fff;
+    padding: 0 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: thin;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 14px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+}
+
+.tab-btn:hover {
+    color: var(--primary);
+}
+
+.tab-btn.active {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--primary);
+    border-radius: 3px 3px 0 0;
+}
+
+.content-wrapper {
+    flex: 1;
+    width: 100%;
+    overflow: hidden;
+}
+
+.iframe-content {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: var(--bg-app);
+}
+
+.footer-status {
+    background: #fff;
+    border-top: 1px solid var(--border);
+    padding: 10px 24px;
+    font-size: 13px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.footer-status::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: var(--success);
+    border-radius: 50%;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+.modal-card {
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    max-width: 380px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.modal-icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+}
+
+.modal-card h3 {
+    font-size: 18px;
+    color: var(--dark-slate);
+    margin-bottom: 8px;
+}
+
+.modal-card p {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    line-height: 1.4;
+}
+
+.modal-card button {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 10px;
+    width: 100%;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.modal-card button:hover {
+    background: var(--primary-hover);
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0 16px;
+        height: 60px;
+    }
+    .navbar-brand h1 {
+        font-size: 16px;
+    }
+    .badge-user {
+        display: none;
+    }
+    .tabs-container {
+        padding: 0 12px;
+    }
+    .tab-btn {
+        padding: 12px 10px;
+        font-size: 13px;
+    }
+
+.tabs-container {
+    background: var(--bg-card);
+    padding: 0 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Menyembunyikan scrollbar di Firefox */
+}
+
+.tabs-container::-webkit-scrollbar {
+    display: none; /* Menyembunyikan scrollbar di Chrome/Safari */
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 14px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    flex-shrink: 0; /* Mencegah tombol tab ikut menyusut atau terpotong di layar HP */
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+}

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Katalog Buku - Lib-Borrow</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --primary-light: #eff6ff;
+            --dark-slate: #0f172a;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --bg-card: #ffffff;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: transparent;
+            color: var(--text-main);
+            padding: 0;
+        }
+
+        /* --- Tombol Aksi Admin --- */
+        .admin-action-btn {
+            display: none;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            transition: all 0.2s ease;
+        }
+
+        .admin-action-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+        }
+
+        /* --- Desain Tabel Modern --- */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            padding: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 16px 20px;
+            font-size: 14px;
+            color: var(--text-main);
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: #f8fafc;
+        }
+
+        /* --- Badge Status Stok --- */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-success { background-color: #d1fae5; color: #047857; }
+        .badge-danger { background-color: #fee2e2; color: #b91c1c; }
+
+        /* --- Tombol Aksi di Baris Tabel --- */
+        .btn-edit {
+            background: #fef3c7;
+            color: #d97706;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-right: 6px;
+        }
+        .btn-edit:hover { background: #fde68a; }
+
+        .btn-delete {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-delete:hover { background: #fecaca; }
+
+        .btn-pinjam {
+            background: #d1fae5;
+            color: #059669;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-pinjam:hover { background: #a7f3d0; }
+
+        .btn-reservasi {
+            background: #fef3c7;
+            color: #d97706;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-reservasi:hover { background: #fde68a; }
+
+        /* --- Modal Popup CRUD Elegan --- */
+        .modal-crud {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(6px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-body {
+            background: white;
+            padding: 32px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: modalPop 0.3s ease-in-out;
+        }
+
+        @keyframes modalPop {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-body h3 {
+            font-size: 20px;
+            color: var(--dark-slate);
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            background: #f8fafc;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 24px;
+        }
+
+        .modal-actions button {
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-cancel {
+            background: #e2e8f0;
+            color: var(--text-muted);
+        }
+        .btn-cancel:hover { background: #cbd5e1; }
+
+        .btn-save {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+        }
+        .btn-save:hover { background: var(--primary-hover); }
+    </style>
+</head>
+<body>
+    <button id="btnTambahBuku" class="admin-action-btn" onclick="bukaModalBuku()">+ Tambah Buku Baru</button>
+    
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 110px;">ID Buku</th>
+                    <th>Judul Buku</th>
+                    <th>Penulis</th>
+                    <th>Kategori</th>
+                    <th style="text-align: center; width: 120px;">Stok</th>
+                    <th style="text-align: center; width: 180px;">Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="buku-list">
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal Form CRUD Buku -->
+    <div id="modalBuku" class="modal-crud">
+        <div class="modal-body">
+            <h3 id="modalTitle">Tambah Buku</h3>
+            <input type="hidden" id="bukuIdForm">
+            <div class="form-group">
+                <label>Judul Buku</label>
+                <input type="text" id="judul" placeholder="Masukkan judul buku">
+            </div>
+            <div class="form-group">
+                <label>Penulis</label>
+                <input type="text" id="penulis" placeholder="Nama penulis">
+            </div>
+            <div class="form-group">
+                <label>Kategori</label>
+                <input type="text" id="kategori" placeholder="Kategori buku">
+            </div>
+            <div class="form-group">
+                <label>Stok</label>
+                <input type="number" id="stok" placeholder="Jumlah stok">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="tutupModalBuku()">Batal</button>
+                <button class="btn-save" onclick="simpanBuku()">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const role = localStorage.getItem("user_role") || (window.parent && window.parent.localStorage.getItem("user_role"));
+        const name = localStorage.getItem("user_name") || (window.parent && window.parent.localStorage.getItem("user_name"));
+        const userId = localStorage.getItem("user_id") || (window.parent && window.parent.localStorage.getItem("user_id"));
+
+        const email = localStorage.getItem("user_email") || localStorage.getItem("email") || 
+                      (window.parent && (window.parent.localStorage.getItem("user_email") || window.parent.localStorage.getItem("email")));
+        
+        const isAdmin = role === "Admin";
+
+        document.addEventListener("DOMContentLoaded", () => { 
+            if (isAdmin) {
+                document.getElementById("btnTambahBuku").style.display = "block";
+            }
+            loadKatalog();
+        });
+
+        async function loadKatalog() {
+            const tbody = document.getElementById("buku-list");
+            
+            try {
+                const response = await fetch("http://localhost:8080/api/buku");
+                const daftarBuku = await response.json();
+
+                tbody.innerHTML = "";
+
+                if (daftarBuku.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 24px; color: var(--text-muted);">Tidak ada koleksi buku saat ini.</td></tr>`;
+                    return;
+                }
+
+                daftarBuku.forEach(buku => {
+                    const row = document.createElement("tr");
+
+                    const badgeStok = buku.stok === 0 
+                        ? `<span class="badge badge-danger">Habis</span>` 
+                        : `<span class="badge badge-success">${buku.stok} Tersedia</span>`;
+
+                    const formatId = "BK-" + String(buku.id).padStart(2, '0');
+
+                    let tombolAksi = "";
+                    if (isAdmin) {
+                        tombolAksi = `
+                            <button class="btn-edit" onclick="editBuku(${buku.id}, '${buku.judul}', '${buku.penulis}', '${buku.kategori}', ${buku.stok})">Edit</button>
+                            <button class="btn-delete" onclick="hapusBuku(${buku.id})">Hapus</button>
+                        `;
+                    } else {
+                        if (buku.stok > 0) {
+                            tombolAksi = `
+                                <button class="btn-pinjam" onclick="prosesPinjam(${buku.id})">Pinjam Buku</button>
+                            `;
+                        } else {
+                            tombolAksi = `
+                                <button class="btn-reservasi" onclick="aksiReservasiBuku(${buku.id})">Reservasi (Antre)</button>
+                            `;
+                        }
+                    }
+
+                    row.innerHTML = `
+                        <td><b>${formatId}</b></td>
+                        <td style="font-weight: 600; color: var(--dark-slate);">${buku.judul}</td>
+                        <td>${buku.penulis}</td>
+                        <td><span style="background: #f1f5f9; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; color: #475569;">${buku.kategori}</span></td>
+                        <td style="text-align: center;">${badgeStok}</td>
+                        <td style="text-align: center;">${tombolAksi}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+            } catch (error) {
+                console.error("Gagal memuat data buku:", error);
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red; padding: 24px;">Gagal memuat data dari server backend!</td></tr>`;
+            }
+        }
+
+        function bukaModalBuku() {
+            document.getElementById("modalTitle").innerText = "Tambah Buku Baru";
+            document.getElementById("bukuIdForm").value = "";
+            document.getElementById("judul").value = "";
+            document.getElementById("penulis").value = "";
+            document.getElementById("kategori").value = "";
+            document.getElementById("stok").value = "";
+            document.getElementById("modalBuku").style.display = "flex";
+        }
+
+        function tutupModalBuku() { 
+            document.getElementById("modalBuku").style.display = "none"; 
+        }
+
+        function editBuku(id, judul, penulis, kategori, stok) {
+            document.getElementById("modalTitle").innerText = "Edit Data Buku";
+            document.getElementById("bukuIdForm").value = id;
+            document.getElementById("judul").value = judul;
+            document.getElementById("penulis").value = penulis;
+            document.getElementById("kategori").value = kategori;
+            document.getElementById("stok").value = stok;
+            document.getElementById("modalBuku").style.display = "flex";
+        }
+
+        async function simpanBuku() {
+            const id = document.getElementById("bukuIdForm").value;
+            const payload = {
+                judul: document.getElementById("judul").value,
+                penulis: document.getElementById("penulis").value,
+                kategori: document.getElementById("kategori").value,
+                stok: parseInt(document.getElementById("stok").value)
+            };
+
+            if(id) { payload.bukuId = parseInt(id); }
+
+            const url = id ? `http://localhost:8080/api/buku/${id}` : 'http://localhost:8080/api/buku';
+            const method = id ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                
+                if(response.ok) {
+                    tutupModalBuku();
+                    loadKatalog();
+                } else {
+                    alert("Gagal menyimpan data buku!");
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function hapusBuku(id) {
+            if (confirm("Apakah Anda yakin ingin menghapus buku ini dari katalog?")) {
+                try {
+                    const response = await fetch(`http://localhost:8080/api/buku/${id}`, { method: 'DELETE' });
+                    if(response.ok) {
+                        loadKatalog();
+                    } else {
+                        alert("Gagal menghapus data buku.");
+                    }
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+        }
+
+        async function prosesPinjam(idBuku) {
+            if (!idBuku) {
+                alert("Eror: ID Buku tidak terbaca oleh sistem!");
+                return;
+            }
+
+            const emailLogin = localStorage.getItem("user_email");
+            const namaLogin = localStorage.getItem("user_nama");
+
+            if (!emailLogin || !namaLogin) {
+                alert("Eror: Anda belum login atau data login tidak tersimpan di browser!");
+                return;
+            }
+
+            if (confirm("Apakah Anda bermaksud meminjam buku ini?")) {
+                const payload = {
+                    emailAnggota: emailLogin,
+                    namaAnggota: namaLogin,
+                    bukuId: idBuku
+                };
+
+                try {
+                    const response = await fetch('http://localhost:8080/api/peminjaman/pinjam', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        alert("Peminjaman sukses! Silakan cek perkembangannya pada menu tab Sirkulasi.");
+                        loadKatalog();
+                    } else {
+                        const errorMsg = await response.text();
+                        alert(errorMsg);
+                    }
+                } catch (err) {
+                    console.error("Koneksi gagal:", err);
+                }
+            }
+        }
+
+        async function aksiReservasiBuku(idBuku) {
+            if (!userId) {
+                alert("Silakan login terlebih dahulu untuk melakukan reservasi buku!");
+                return;
+            }
+
+            if (!confirm("Stok buku ini sedang habis. Apakah Anda bersedia masuk antrean reservasi buku ini?")) {
+                return;
+            }
+
+            const payloadReservasi = {
+                userId: parseInt(userId),
+                bukuId: parseInt(idBuku)
+            };
+
+            try {
+                const response = await fetch("http://localhost:8080/api/reservasi", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payloadReservasi)
+                });
+
+                if (response.ok) {
+                    alert("Reservasi Berhasil Diajukan! Silakan pantau nomor antrean Anda di halaman menu Antrean Reservasi.");
+                    loadKatalog();
+                } else {
+                    const pesanError = await response.text();
+                    alert(pesanError || "Gagal mengajukan reservasi.");
+                }
+            } catch (error) {
+                console.error("Koneksi gagal:", error);
+                alert("Terjadi kendala jaringan saat mencoba menghubungi server.");
+            }
+        }
+    </script>
+</body>
+</html>

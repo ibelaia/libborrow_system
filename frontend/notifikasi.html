@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifikasi - Lib-Borrow</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --bg-card: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: transparent;
+            color: var(--text-main);
+            padding: 20px;
+        }
+
+        .notif-wrapper {
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        .notif-item {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 14px;
+            margin-bottom: 14px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border);
+            border-left: 5px solid var(--primary);
+            text-align: left;
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .notif-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+        }
+
+        .notif-item.unread {
+            border-left-color: #ef4444;
+            background: #fffdfd;
+        }
+
+        .notif-time {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: block;
+            margin-top: 8px;
+        }
+
+        .btn-baca {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-baca:hover { background: #dbeafe; }
+
+        .notif-box-empty {
+            background: var(--bg-card);
+            border: 2px dashed var(--border);
+            padding: 50px 20px;
+            border-radius: 16px;
+            color: var(--text-muted);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+   <div id="notif-wrapper" class="notif-wrapper"></div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", loadNotifikasi);
+
+        async function loadNotifikasi() {
+            const wrapper = document.getElementById("notif-wrapper");
+            const userId = localStorage.getItem("user_id") || (window.parent && window.parent.localStorage.getItem("user_id"));
+
+            if (!userId) {
+                wrapper.innerHTML = `<p style="text-align:center;">Silakan login terlebih dahulu.</p>`;
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:8080/api/notifikasi/user/${userId}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Server bermasalah dengan status: ${response.status}`);
+                }
+
+                const daftarNotif = await response.json();
+
+                if (!Array.isArray(daftarNotif)) {
+                    throw new Error("Format data yang diterima dari server bukan berupa List/Array!");
+                }
+
+                wrapper.innerHTML = "";
+
+                if (daftarNotif.length === 0) {
+                    wrapper.innerHTML = `
+                        <div class="notif-box-empty">
+                            <span style="font-size: 40px; display:block; margin-bottom: 12px;">📬</span>
+                            <strong style="font-size: 16px; color: var(--text-main);">Kotak Masuk Pesan Kosong</strong>
+                            <p style="font-size:14px; margin-top:6px;">Belum ada pemberitahuan antrean reservasi buku untuk Anda saat ini.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                daftarNotif.forEach(notif => {
+                    const item = document.createElement("div");
+                    item.className = `notif-item ${notif.dibaca ? '' : 'unread'}`;
+
+                    const dateFormated = new Date(notif.tanggalKirim).toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' });
+
+                    const tombolAksi = !notif.dibaca 
+                        ? `<button class="btn-baca" onclick="prosesTandaiDibaca(${notif.id})">Tandai Dibaca</button>` 
+                        : `<span style="position: absolute; right: 20px; top: 20px; font-size: 12px; font-weight: 600; color: #10b981;">✔ Dibaca</span>`;
+
+                    item.innerHTML = `
+                        ${tombolAksi}
+                        <strong style="color: var(--text-main); font-size: 14px;">Pemberitahuan Sistem</strong>
+                        <p style="font-size: 14px; margin: 6px 0 0 0; color: #475569; line-height: 1.5;">${notif.pesan}</p>
+                        <span class="notif-time">⏰ Dikirim pada: ${dateFormated} WIB</span>
+                    `;
+                    wrapper.appendChild(item);
+                });
+
+            } catch (error) {
+                console.error("Gagal memuat notifikasi:", error);
+                wrapper.innerHTML = `<p style="text-align:center; color:red; margin-top: 20px;">Gagal memuat kotak masuk pesan akibat gangguan server backend.</p>`;
+            }
+        }
+
+        async function prosesTandaiDibaca(idNotif) {
+            try {
+                const response = await fetch(`http://localhost:8080/api/notifikasi/baca/${idNotif}`, {
+                    method: 'PUT'
+                });
+                
+                if (response.ok) {
+                    loadNotifikasi();
+                } else {
+                    console.error("Gagal memperbarui status baca.");
+                }
+            } catch (error) {
+                console.error("Terjadi kendala jaringan:", error);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Anggota - Lib-Borrow</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --dark-slate: #0f172a;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --bg-card: #ffffff;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: transparent;
+            color: var(--text-main);
+            padding: 0;
+        }
+
+        .admin-action-btn {
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            transition: all 0.2s ease;
+        }
+        .admin-action-btn:hover { background: var(--primary-hover); }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            padding: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 16px 20px;
+            font-size: 14px;
+            color: var(--text-main);
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background-color: #f8fafc; }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-success { background-color: #d1fae5; color: #047857; }
+        .badge-danger { background-color: #fee2e2; color: #b91c1c; }
+        .badge-primary { background-color: #eff6ff; color: #1d4ed8; }
+
+        .btn-edit {
+            background: #fef3c7;
+            color: #d97706;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-right: 6px;
+        }
+        .btn-edit:hover { background: #fde68a; }
+
+        .btn-delete {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-delete:hover { background: #fecaca; }
+
+        /* --- Modal Popup --- */
+        .modal-crud {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(6px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-body {
+            background: white;
+            padding: 32px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 460px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: modalPop 0.3s ease-in-out;
+        }
+
+        @keyframes modalPop {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-body h3 {
+            font-size: 20px;
+            color: var(--dark-slate);
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .form-group { margin-bottom: 16px; text-align: left; }
+        .form-group label { display: block; font-size: 13px; margin-bottom: 6px; font-weight: 600; color: var(--text-main); }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            background: #f8fafc;
+            transition: all 0.2s;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+        .modal-actions button {
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        .btn-cancel { background: #e2e8f0; color: var(--text-muted); }
+        .btn-cancel:hover { background: #cbd5e1; }
+        .btn-save { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
+        .btn-save:hover { background: var(--primary-hover); }
+    </style>
+    <script>
+        if (localStorage.getItem("user_role") !== "Admin") {
+            window.stop(); 
+            window.location.href = "login.html"; 
+        }
+    </script>
+</head>
+<body>
+
+    <button class="admin-action-btn" onclick="bukaModalAnggota()">+ Tambah Anggota Baru</button>
+
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID User</th>
+                    <th>Nama Lengkap</th>
+                    <th>Username</th>
+                    <th>Alamat Email</th>
+                    <th>Role</th>
+                    <th>Status Akun</th>
+                    <th>No. Anggota</th>
+                    <th style="text-align: center; width: 160px;">Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="anggota-list"></tbody>
+        </table>
+    </div>
+
+    <div id="modalAnggota" class="modal-crud">
+        <div class="modal-body">
+            <h3 id="modalTitle">Tambah Anggota</h3>
+            <input type="hidden" id="userIdForm">
+            
+            <div class="form-group">
+                <label>Nama Lengkap</label>
+                <input type="text" id="namaLengkap" required placeholder="Nama lengkap pengguna">
+            </div>
+            <div class="form-group">
+                <label>Alamat Email</label>
+                <input type="email" id="email" required placeholder="email@domain.com">
+            </div>
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="username" required placeholder="Username unik">
+            </div>
+            <div class="form-group">
+                <label>Role Otoritas</label>
+                <select id="role">
+                    <option value="Anggota">Anggota</option>
+                    <option value="Admin">Admin</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>No. Anggota (Isi '-' jika Admin)</label>
+                <input type="text" id="noAnggota" placeholder="Contoh: AG-003">
+            </div>
+            <div class="form-group" id="passwordFormGroup">
+                <label>Kata Sandi Awal</label>
+                <input type="password" id="password" placeholder="••••••••">
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="tutupModalAnggota()">Batal</button>
+                <button class="btn-save" onclick="simpanAnggota()">Simpan Data</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", loadAnggota);
+
+        async function loadAnggota() {
+            const tbody = document.getElementById("anggota-list");
+            try {
+                const response = await fetch("http://localhost:8080/api/users");
+                const daftarAnggota = await response.json();
+
+                tbody.innerHTML = "";
+
+                if (daftarAnggota.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 24px; color: var(--text-muted);">Tidak ada data anggota perpustakaan.</td></tr>`;
+                    return;
+                }
+
+                daftarAnggota.forEach(member => {
+                    const row = document.createElement("tr");
+                    
+                    const badgeRole = member.role === "Admin" 
+                        ? `<span class="badge badge-danger">Admin</span>`
+                        : `<span class="badge badge-primary">Anggota</span>`;
+
+                    const nomorAnggota = member.noAnggota ? member.noAnggota : '-';
+                    const namaUser = member.namaLengkap ? member.namaLengkap : '-';
+
+                    const namaEscaped = namaUser.replace(/'/g, "\\'");
+                    const usernameEscaped = member.username ? member.username.replace(/'/g, "\\'") : '';
+                    const emailEscaped = member.email ? member.email.replace(/'/g, "\\'") : '';
+
+                    const tombolAksi = `
+                        <button class="btn-edit" onclick="editAnggota(${member.id}, '${namaEscaped}', '${usernameEscaped}', '${emailEscaped}', '${member.role}', '${nomorAnggota}')">Edit</button>
+                        <button class="btn-delete" onclick="hapusAnggota(${member.id})">Hapus</button>
+                    `;
+
+                    row.innerHTML = `
+                        <td><b>US-${String(member.id).padStart(2, '0')}</b></td>
+                        <td style="font-weight: 600; color: var(--dark-slate);">${namaUser}</td>
+                        <td><code style="background: #f1f5f9; padding: 3px 8px; border-radius: 4px; font-size: 12px;">${member.username || '-'}</code></td>
+                        <td>${member.email}</td>
+                        <td>${badgeRole}</td>
+                        <td><span class="badge badge-success">Aktif</span></td>
+                        <td>${nomorAnggota}</td>
+                        <td style="text-align: center;">${tombolAksi}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Gagal memuat data anggota:", error);
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:red; padding: 24px;">Gagal mengambil data dari server.</td></tr>`;
+            }
+        }
+
+        function bukaModalAnggota() {
+            document.getElementById("modalTitle").innerText = "Tambah Anggota Baru";
+            document.getElementById("userIdForm").value = "";
+            document.getElementById("namaLengkap").value = "";
+            document.getElementById("username").value = "";
+            document.getElementById("email").value = "";
+            document.getElementById("role").value = "Anggota";
+            document.getElementById("noAnggota").value = "";
+            
+            document.getElementById("passwordFormGroup").style.display = "block";
+            document.getElementById("password").value = "";
+            document.getElementById("password").required = true;
+
+            document.getElementById("modalAnggota").style.display = "flex";
+        }
+
+        function tutupModalAnggota() {
+            document.getElementById("modalAnggota").style.display = "none";
+        }
+
+        function editAnggota(id, nama, username, email, role, noAnggota) {
+            document.getElementById("modalTitle").innerText = "Edit Data Anggota";
+            document.getElementById("userIdForm").value = id;
+            document.getElementById("namaLengkap").value = nama;
+            document.getElementById("username").value = username;
+            document.getElementById("email").value = email;
+            document.getElementById("role").value = role;
+            document.getElementById("noAnggota").value = noAnggota === '-' ? '' : noAnggota;
+            
+            document.getElementById("passwordFormGroup").style.display = "none";
+            document.getElementById("password").value = "";
+            document.getElementById("password").required = false;
+
+            document.getElementById("modalAnggota").style.display = "flex";
+        }
+
+        async function simpanAnggota() {
+            const id = document.getElementById("userIdForm").value;
+            const passwordValue = document.getElementById("password").value;
+
+            if (!id && !passwordValue) {
+                alert("Kata sandi awal wajib diisi untuk anggota baru!");
+                return;
+            }
+
+            const payload = {
+                namaLengkap: document.getElementById("namaLengkap").value,
+                username: document.getElementById("username").value,
+                email: document.getElementById("email").value,
+                role: document.getElementById("role").value,
+                noAnggota: document.getElementById("noAnggota").value
+            };
+
+            if (!id) { 
+                payload.password = passwordValue; 
+            } else { 
+                payload.id = parseInt(id); 
+            }
+
+            const url = id ? `http://localhost:8080/api/users/${id}` : 'http://localhost:8080/api/users/register';
+            const method = id ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    tutupModalAnggota();
+                    loadAnggota();
+                } else {
+                    alert("Gagal menyimpan data anggota perpustakaan.");
+                }
+            } catch (err) {
+                console.error("Terjadi kesalahan sistem:", err);
+            }
+        }
+
+        async function hapusAnggota(id) {
+            if (confirm("Apakah Anda yakin ingin menghapus hak akses anggota ini?")) {
+                try {
+                    const response = await fetch(`http://localhost:8080/api/users/${id}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        loadAnggota();
+                    } else {
+                        alert("Gagal menghapus data anggota.");
+                    }
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservasi Buku - Lib-Borrow</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --bg-card: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: transparent;
+            color: var(--text-main);
+            padding: 20px;
+        }
+
+        .reservasi-wrapper {
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        .reservasi-item {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 14px;
+            margin-bottom: 14px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border);
+            border-left: 5px solid #64748b;
+            text-align: left;
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .reservasi-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+        }
+
+        .reservasi-item.pending { border-left-color: #f59e0b; background: #fffdfa; }
+        .reservasi-item.tersedia { border-left-color: #10b981; background: #f4fdf8; }
+        .reservasi-item.selesai { border-left-color: #2563eb; background: #f8fafc; }
+        
+        .reservasi-time { font-size: 12px; color: var(--text-muted); display: block; margin-top: 8px; }
+        
+        .status-badge {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-badge.pending { background: #fef3c7; color: #b45309; }
+        .status-badge.tersedia { background: #d1fae5; color: #047857; }
+        .status-badge.selesai { background: #dbeafe; color: #1d4ed8; }
+
+        .reservasi-box-empty {
+            background: var(--bg-card);
+            border: 2px dashed var(--border);
+            padding: 50px 20px;
+            border-radius: 16px;
+            color: var(--text-muted);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+   <div id="reservasi-wrapper" class="reservasi-wrapper"></div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", loadReservasi);
+
+        async function loadReservasi() {
+            const wrapper = document.getElementById("reservasi-wrapper");
+            
+            const userId = localStorage.getItem("user_id") || (window.parent && window.parent.localStorage.getItem("user_id"));
+            const role = localStorage.getItem("user_role") || localStorage.getItem("role") || (window.parent && window.parent.localStorage.getItem("user_role"));
+
+            if (!userId) {
+                wrapper.innerHTML = `<p style="text-align:center;">Silakan login terlebih dahulu.</p>`;
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:8080/api/reservasi?userId=${userId}&role=${role}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Server bermasalah dengan status: ${response.status}`);
+                }
+
+                const daftarReservasi = await response.json();
+
+                if (!Array.isArray(daftarReservasi)) {
+                    throw new Error("Format data dari server salah!");
+                }
+
+                wrapper.innerHTML = "";
+
+                if (daftarReservasi.length === 0) {
+                    wrapper.innerHTML = `
+                        <div class="reservasi-box-empty">
+                            <span style="font-size: 40px; display:block; margin-bottom: 12px;">📖</span>
+                            <strong style="font-size: 16px; color: var(--text-main);">Belum Ada Reservasi Buku</strong>
+                            <p style="font-size:14px; margin-top:6px;">Anda belum melakukan booking atau mengantre buku saat ini.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                daftarReservasi.forEach(res => {
+                    const item = document.createElement("div");
+                    const statusLower = res.status ? res.status.toLowerCase() : 'pending';
+                    
+                    item.className = `reservasi-item ${statusLower}`;
+
+                    const dateFormated = new Date(res.tanggalReservasi).toLocaleDateString('id-ID', { dateStyle: 'long' });
+
+                    const namaPeminjam = res.user ? (res.user.namaLengkap || res.user.username) : "Umum";
+                    const judulBuku = res.buku ? res.buku.judul : "Buku Tidak Diketahui";
+
+                    item.innerHTML = `
+                        <span class="status-badge ${statusLower}">${res.status}</span>
+                        <strong style="color: var(--text-main); font-size: 14px;">Informasi Antrean Buku</strong>
+                        <p style="font-size: 14px; margin: 8px 0 0 0; color: #475569; line-height: 1.5;">
+                            Buku: <strong style="color: var(--text-main);">${judulBuku}</strong> <br>
+                            Peminjam: <span>${namaPeminjam}</span>
+                        </p>
+                        <span class="reservasi-time">📅 Tanggal Booking: ${dateFormated}</span>
+                    `;
+                    wrapper.appendChild(item);
+                });
+
+            } catch (error) {
+                console.error("Gagal memuat reservasi:", error);
+                wrapper.innerHTML = `<p style="text-align:center; color:red; margin-top: 20px;">Gagal memuat daftar reservasi akibat gangguan server backend.</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
